@@ -1,0 +1,7 @@
+{
+	"name": "Elastic Compact",
+	"author": "Luis Gonzalez-Silen (based on Elastic by Aleksander Machniak)",
+	"license": "Creative Commons Attribution-ShareAlike 3.0",
+	"license-url": "https://creativecommons.org/licenses/by-sa/3.0/",
+	"extends": "elastic"
+}

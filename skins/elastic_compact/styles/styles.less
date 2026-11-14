@@ -1,0 +1,123 @@
+// "Elastic Compact": Elastic with denser desktop layout (one-line message rows, slim toolbars).
+// Build: ./build.sh <roundcube-dir> (compiles against that install's Elastic sources); see README.md.
+// Phone/touch layouts are left as Elastic ships them.
+
+@import "../../elastic/styles/styles.less";
+
+// LESS variables are lazy: these override Elastic's everywhere they're used.
+@page-font-size:          13px;
+@layout-header-height:    floor(2.6 * @page-font-size);
+@layout-searchbar-height: floor(2.2 * @page-font-size);
+@listing-line-height:     floor(1.9 * @page-font-size);
+@layout-menu-width:       floor(4.6 * @page-font-size);
+
+html:not(.layout-phone):not(.touch) {
+
+    // ---- message list: one line per message: [status] from | subject ... date [flags]
+    .messagelist {
+        td { padding-top: 0; padding-bottom: 0; }
+        td.subject {
+            flex-wrap: nowrap;
+            align-items: center;
+            span {
+                line-height: 1.6em;
+                &.status  { order: 1; }
+                &.fromto  {
+                    order: 2;
+                    flex: 0 0 13em;
+                    padding-left: 0;
+                    padding-right: 1em;
+                    font-size: 100%;
+                }
+                &.to {
+                    order: 3;
+                    flex: 0 0 11em;
+                    padding-right: 1em;
+                    .overflow-ellipsis();
+                    color: @color-list-secondary;
+                }
+                &.subject { order: 4; flex: 1 1 auto; width: auto; min-width: 0; }
+                &.date    { order: 5; flex: 0 0 auto; padding-left: 1em; white-space: nowrap; }
+                &.size    {
+                    order: 6;
+                    display: inline;
+                    flex: 0 0 5em;
+                    padding-left: .5em;
+                    text-align: right;
+                    white-space: nowrap;
+                }
+            }
+            span.msgicon.status:before { height: 1.6em; }
+        }
+        &.sort-size span.date { display: inline; }   // Elastic swaps date for size; show both
+        tr.flagged td.subject span.to { color: @color-list-flagged; }
+        // flag + attachment icons side by side: Elastic stacks them (2 lines), which made every row twice the
+        // height of the one-line subject cell, so the row separator jumped under the threads and flags cells
+        td.flags, th.flags { width: 4.4em; }   // room for both icons (Elastic: 2.5em, sized for the stacked pair)
+        td.flags { white-space: nowrap; line-height: 1.6em; padding-left: .2em; padding-right: .2em; text-overflow: clip; }
+        td.flags > span { display: inline-block; vertical-align: middle; height: 1.6em; line-height: 1.6em; }
+        td.threads, td.selection { line-height: 1.6em; }
+    }
+
+    // ---- toolbars: icon and label side by side, short header
+    .menu.toolbar {
+        li { height: @layout-header-height; }
+        a {
+            height: @layout-header-height;
+            min-width: 0;
+            max-width: none;
+            padding: 0 .5rem;
+            display: flex;
+            align-items: center;
+            line-height: 1;
+            &:before {
+                height: auto !important;
+                line-height: 1 !important;
+                margin-right: .35em !important;
+            }
+            span.inner { font-size: 95%; white-space: nowrap; }
+        }
+        .dropbutton a.dropdown:before { line-height: @layout-header-height; }
+    }
+}
+
+// ---- mail view on wide screens: message list on top, preview underneath (Larry/Pine style).
+// The bar between them is draggable (plugin elastic_compact; height remembered per browser, double-click resets).
+html.layout-large body.task-mail.action-none #layout {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "menu side list" "menu side content";
+
+    & > #layout-menu    { grid-area: menu; }
+    & > #layout-sidebar { grid-area: side; width: 220px; max-width: none; }
+    & > #layout-list {
+        grid-area: list;
+        width: auto !important;
+        max-width: none;
+        min-width: 0;
+        height: 40vh;
+        min-height: 6rem;
+        max-height: calc(100vh - 4rem);
+        overflow: hidden;
+        position: relative;
+        border-right: 0;
+        border-bottom: 2px solid @color-layout-border;
+        & > .column-resizer { display: none; }
+        & > .ec-row-resizer {
+            display: block;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 6px;
+            cursor: row-resize;
+            z-index: 2;
+            &:hover { background-color: @color-layout-border; }
+        }
+    }
+    & > #layout-content { grid-area: content; min-height: 0; }
+}
+
+.ec-row-resizer { display: none; }
+.ec-resize-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000; cursor: row-resize; }
